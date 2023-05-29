@@ -8,14 +8,15 @@
 // Globals
 // ------------------------------------------------------------------------------------------------
 
-let messageId = 0
-const messageCallbacks = {}
+let messageId: number = 0
+const messageCallbacks: {[messageId: number]: {resolve: Function, reject: Function}} = {
+}
 
 // ------------------------------------------------------------------------------------------------
 // sendRequest
 // ------------------------------------------------------------------------------------------------
 
-async function sendRequest (port, func, ...args) {
+async function sendRequest (port, func, ...args): Promise<void> {
   return await new Promise((resolve, reject) => {
     messageCallbacks[messageId] = { resolve, reject }
     port.postMessage({ id: messageId, func, args })
@@ -27,7 +28,7 @@ async function sendRequest (port, func, ...args) {
 // listen
 // ------------------------------------------------------------------------------------------------
 
-function listen (port, handlers) {
+function listen (port, handlers): void {
   port.on('message', async msg => {
     if (msg.response) {
       if (msg.err) {

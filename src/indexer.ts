@@ -4,16 +4,46 @@
  * Main object that discovers, downloads, executes and stores RUN transactions
  */
 
-const Database = require('./database')
-const Downloader = require('./downloader')
-const Executor = require('./executor')
-const Crawler = require('./crawler')
+import Database from '/database'
+
+import Downloader from './downloader'
+
+import Executor from './executor'
+
+import Crawler from './crawler'
+
+import { Logger } from './logger'
+
+import Api from './api'
 
 // ------------------------------------------------------------------------------------------------
 // Indexer
 // ------------------------------------------------------------------------------------------------
 
+type Txid = string;
+
 class Indexer {
+  database: Database;
+  downloader: Downloader;
+  executor: Executor;
+  logger: Logger;
+  crawler: Crawler;
+  api: Api;
+
+  network: string;
+  startHeight: number;
+  defaultTrustlist: Txid[];
+
+  onReorg: (newHeight: number) => void;
+  onBlock: (newHeight: number) => void;
+  onIndex: (txid: string) => void;
+  onFailToIndex: (txid: string, error: Error) => void;
+  onFailToDownload: (txid: string) => void;
+  onDownload: (txid: string) => void;
+  onMissingDeps: () => void;
+
+  mempoolExpiration: number;
+
   constructor (database, api, network, numParallelDownloads, numParallelExecutes, logger, startHeight, mempoolExpiration, defaultTrustlist) {
     this.onDownload = null
     this.onFailToDownload = null
@@ -96,7 +126,7 @@ class Indexer {
   }
 
   _onRetryingDownload (txid, secondsToRetry) {
-    this.logger.info('Retrying download', txid, 'after', secondsToRetry, 'seconds')
+    this.logger.info(`Retrying download ${txid} after ${secondsToRetry} seconds`)
   }
 
   _onIndexed (txid, result) {

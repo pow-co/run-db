@@ -7,8 +7,10 @@
 const { parentPort, workerData } = require('worker_threads')
 const crypto = require('crypto')
 const Run = require('run-sdk')
-const bsv = require('bsv')
-const Bus = require('./bus')
+
+import * as bsv from 'bsv'
+
+import * as Bus from './.bus'
 
 // ------------------------------------------------------------------------------------------------
 // Startup

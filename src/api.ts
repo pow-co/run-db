@@ -8,7 +8,7 @@
 // Api
 // ------------------------------------------------------------------------------------------------
 
-class Api {
+export default class Api {
   // Connect to the API at a particular block height and network
   async connect (height, network) { }
 

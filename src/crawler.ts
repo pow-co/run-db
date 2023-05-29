@@ -8,7 +8,54 @@
 // Crawler
 // ------------------------------------------------------------------------------------------------
 
-class Crawler {
+export interface Api {
+	listenForMempool: (params?: any) => void;
+	getNextBlock: (currentHeight: number, currentHash: string) => Promise<Block>;
+}
+
+export interface Block {
+	hash: string;
+	txids: string[];
+	txhexs: string[];
+	height: number;
+	time: number;
+	reorg?: any;
+}
+
+export default class Crawler {
+
+  onRewindBlocks: (height: number) => void;
+
+  onMempoolTransaction: (txid: string, txhex: string) => void;
+
+  onExpireMempoolTransactions: () => void;
+
+  onCrawlBlockTransactions: (height: number, hash: string, time: number, txids: string[], txhexs: string[]) => void;
+
+  pollForNewBlocksTimerId: NodeJS.Timeout;
+
+  expireMempoolTransactionsTimerId: NodeJS.Timeout;
+
+  onCrawlError: (error: Error) => void;
+
+  api: Api;
+
+  height: number;
+
+  listeningForMempool: boolean;
+
+  logger: any;
+
+  hash: string;
+
+  pollForNewBlocksInterval: number;
+
+  expireMempoolTransactionsInterval: number;
+
+  rewindCount: number;
+
+  started: boolean;
+
   constructor (api, logger) {
     this.api = api
     this.logger = logger
@@ -77,7 +124,7 @@ class Crawler {
     this.pollForNewBlocksTimerId = setTimeout(this._pollForNewBlocks.bind(this), this.pollForNewBlocksInterval)
   }
 
-  async _pollForNextBlock () {
+  async _pollForNextBlock (): Promise<void> {
     if (!this.started) return
 
     this.logger.debug('Polling for next block')
@@ -145,4 +192,3 @@ class Crawler {
 
 // ------------------------------------------------------------------------------------------------
 
-module.exports = Crawler

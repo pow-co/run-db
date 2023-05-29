@@ -8,8 +8,12 @@
 // Downloader
 // ------------------------------------------------------------------------------------------------
 
-class Downloader {
-  constructor (fetchFunction, numParallelDownloads) {
+interface FetchFunction {
+	(txid: string): Promise<string>
+}
+
+export default class Downloader {
+  constructor (fetchFunction: FetchFunction, numParallelDownloads: number) {
     this.onDownloadTransaction = null
     this.onFailedToDownloadTransaction = null
     this.onRetryingDownload = null
@@ -23,21 +27,21 @@ class Downloader {
     this.attempts = new Map() // txid -> attempts
   }
 
-  stop () {
+  stop (): void {
     this.queued = new Set()
     this.fetching = new Set()
     this.waitingToRetry = new Set()
     this.attempts = new Map()
   }
 
-  add (txid) {
+  add (txid: string): void {
     if (this.has(txid)) return
     if (!this.fetchFunction) return
 
     this._enqueueFetch(txid)
   }
 
-  _enqueueFetch (txid) {
+  _enqueueFetch (txid: string): void {
     if (this.fetching.size >= this.numParallelDownloads) {
       this.queued.add(txid)
     } else {
@@ -45,7 +49,7 @@ class Downloader {
     }
   }
 
-  remove (txid) {
+  remove (txid: string): void {
     if (!this.has(txid)) return
     this.queued.delete(txid)
     this.fetching.delete(txid)
@@ -53,15 +57,15 @@ class Downloader {
     this.attempts.delete(txid)
   }
 
-  has (txid) {
+  has (txid: string):boolean {
     return this.queued.has(txid) || this.fetching.has(txid) || this.waitingToRetry.has(txid)
   }
 
-  remaining () {
+  remaining (): number {
     return this.queued.size + this.fetching.size + this.waitingToRetry.size
   }
 
-  async _fetch (txid) {
+  async _fetch (txid: string): Promise<void> {
     this.fetching.add(txid)
 
     try {
@@ -75,7 +79,7 @@ class Downloader {
     }
   }
 
-  _onFetchSucceed (txid, hex, height, time) {
+  _onFetchSucceed (txid: string, hex: string, height: number, time: number): void {
     if (!this.fetching.delete(txid)) return
 
     this.attempts.delete(txid)
@@ -83,7 +87,7 @@ class Downloader {
     if (this.onDownloadTransaction) this.onDownloadTransaction(txid, hex, height, time)
   }
 
-  _onFetchFailed (txid, e) {
+  _onFetchFailed (txid: string, e: error): void {
     if (!this.fetching.delete(txid)) return
 
     if (this.onFailedToDownloadTransaction) this.onFailedToDownloadTransaction(txid, e)
@@ -103,7 +107,7 @@ class Downloader {
     }, secondsToRetry * 1000)
   }
 
-  _fetchNextInQueue () {
+  _fetchNextInQueue (): void {
     if (!this.queued.size) return
 
     const txid = this.queued.keys().next().value
@@ -114,5 +118,3 @@ class Downloader {
 }
 
 // ------------------------------------------------------------------------------------------------
-
-module.exports = Downloader

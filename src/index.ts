@@ -18,18 +18,17 @@ const BitcoinRpc = require('./bitcoin-rpc')
 const BitcoinZmq = require('./bitcoin-zmq')
 const Database = require('./database')
 const DirectServer = require('./direct-server')
+import logger from './logger'
 
 // ------------------------------------------------------------------------------------------------
 // Globals
 // ------------------------------------------------------------------------------------------------
+abstract class Api {
 
-const logger = {}
-logger.info = console.info.bind(console)
-logger.warn = console.warn.bind(console)
-logger.error = console.error.bind(console)
-logger.debug = DEBUG ? console.debug.bind(console) : () => {}
+}
 
-let api = null
+let api: Api;
+
 switch (API) {
   case 'mattercloud': api = new MatterCloud(MATTERCLOUD_KEY, logger); break
   case 'planaria': api = new Planaria(PLANARIA_TOKEN, logger); break

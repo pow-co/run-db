@@ -5,13 +5,19 @@
  */
 
 const { Worker } = require('worker_threads')
-const Bus = require('./bus')
+
+import * as Bus from './bus'
 
 // ------------------------------------------------------------------------------------------------
 // Executor
 // ------------------------------------------------------------------------------------------------
 
-class Executor {
+export default class Executor {
+
+  onExecuteFailed: () => void;
+  onMissingDeps: () => void;
+  onIndexed: () => void;
+
   constructor (network, numWorkers, database, logger) {
     this.network = network
     this.numWorkers = numWorkers
@@ -139,5 +145,3 @@ class Executor {
 }
 
 // ------------------------------------------------------------------------------------------------
-
-module.exports = Executor
